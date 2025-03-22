@@ -1,29 +1,25 @@
-// Function to collect website data
-function collectWebsiteData() {
-  const data = {
-    url: window.location.href,
-    title: document.title,
-    timestamp: new Date().toISOString(),
-    content: {
-      text: document.body.innerText,
-      html: document.documentElement.outerHTML,
-      meta: {
-        description: document.querySelector('meta[name="description"]')?.content || '',
-        keywords: document.querySelector('meta[name="keywords"]')?.content || '',
-        author: document.querySelector('meta[name="author"]')?.content || ''
-      },
-      links: Array.from(document.links).map(link => ({
-        href: link.href,
-        text: link.textContent
-      })),
-      images: Array.from(document.images).map(img => ({
-        src: img.src,
-        alt: img.alt
-      }))
-    }
-  };
+// Function to find and extract article content
+function findArticleContent() {
+  const article = document.getElementById('article-body');
+  if (!article) {
+    throw new Error('No article with id "article-body" found on this page');
+  }
 
-  return data;
+  // Get all paragraphs from the article
+  const paragraphs = article.getElementsByTagName('p');
+  
+  // Extract text from each paragraph
+  const textContent = Array.from(paragraphs)
+    .map(p => p.textContent.trim())
+    .filter(text => text.length > 0) // Remove empty paragraphs
+    .join('\n\n'); // Join paragraphs with double newlines
+
+  return {
+    text: textContent,
+    title: document.title,
+    url: window.location.href,
+    timestamp: new Date().toISOString()
+  };
 }
 
 // Listen for messages from popup
@@ -32,11 +28,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   if (request.action === 'collectData') {
     try {
-      const data = collectWebsiteData();
-      console.log('Collected Website Data:', data);
-      sendResponse({ success: true });
+      const data = findArticleContent();
+      console.log('Collected Article Content:', data);
+      sendResponse({ success: true, data: data });
     } catch (error) {
-      console.error('Error collecting data:', error);
+      console.error('Error collecting article data:', error);
       sendResponse({ success: false, error: error.message });
     }
   }
