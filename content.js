@@ -165,26 +165,35 @@ console.log(content);
 
 if (content) {
   try {
-    const response = fetch("http://localhost:5001/fact-check-article", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        article: content.text,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const { falseClaims } = await response.json();
-
-    console.log(falseClaims);
-
-    underlineClaims(falseClaims);
+    // const response = fetch("http://localhost:5001/fact-check-article", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: {
+    //     article: content.text,
+    //   },
+    // });
+    // if (!response.ok) {
+    //   throw new Error("Network response was not ok");
+    // }
+    // const { falseClaims } = await response.json();
+    // console.log(falseClaims);
+    // underlineClaims(falseClaims);
   } catch (error) {
     console.error("Fact-check article error:", error);
   }
 }
+
+// contentScript.js
+window.onload = function () {
+  console.log("Page loaded!");
+  // Your code here
+};
+
+// or
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("Page loaded!");
+  // Your code here
+});
