@@ -26,28 +26,6 @@ function collectWebsiteData() {
   return data;
 }
 
-// Function to send data to backend API
-async function sendDataToBackend(data) {
-  try {
-    const response = await fetch('YOUR_BACKEND_API_ENDPOINT', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error sending data to backend:', error);
-    throw error;
-  }
-}
-
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Content script received message:', request);
@@ -55,20 +33,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'collectData') {
     try {
       const data = collectWebsiteData();
-      sendDataToBackend(data)
-        .then(() => {
-          console.log('Data sent successfully');
-          sendResponse({ success: true });
-        })
-        .catch(error => {
-          console.error('Error sending data:', error);
-          sendResponse({ success: false, error: error.message });
-        });
-      return true; // Will respond asynchronously
+      console.log('Collected Website Data:', data);
+      sendResponse({ success: true });
     } catch (error) {
       console.error('Error collecting data:', error);
       sendResponse({ success: false, error: error.message });
     }
   }
-  return true; // Keep the message channel open for async response
+  return true;
 }); 
