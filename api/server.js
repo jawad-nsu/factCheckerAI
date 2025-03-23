@@ -1,4 +1,4 @@
-// ✅ server.js (Express API with robust JSON extraction from Cohere response + sources)
+// ✅ server.js (Full Optimized Code)
 
 import express from "express";
 import cors from "cors";
@@ -17,31 +17,77 @@ const cohere = new CohereClient({ token: process.env.COHERE_API_KEY });
 app.use(cors());
 app.use(express.json());
 
-// Helper: Extract factual sentences from article
+// Helper: Extract and group sentences with contextual awareness
 function extractSentences(articleText) {
-    return split(articleText)
+    const sentences = split(articleText)
         .filter((e) => e.type === "Sentence")
         .map((s) => s.raw.trim())
         .filter((s) => s.length > 30);
+
+    const grouped = [];
+    let currentGroup = [];
+
+    // Group sentences connected by conjunctions/transitions
+    const TRANSITION_WORDS = new Set([
+        "and",
+        "but",
+        "however",
+        "although",
+        "moreover",
+        "furthermore",
+        "nevertheless",
+        "therefore",
+        "thus",
+    ]);
+
+    sentences.forEach((sentence, index) => {
+        const words = sentence.split(/[ ,]+/);
+        const firstWord = words[0].toLowerCase();
+        const lastChar = sentence.trim().slice(-1);
+
+        // Check if sentence starts with transition or lowercase
+        const isContinuation =
+            TRANSITION_WORDS.has(firstWord) ||
+            /^[a-z]/.test(sentence) ||
+            lastChar !== "."; // Handle trailing commas/semicolons
+
+        if (isContinuation && currentGroup.length > 0) {
+            currentGroup[currentGroup.length - 1] += " " + sentence;
+        } else {
+            if (currentGroup.length > 0) grouped.push(currentGroup.join(" "));
+            currentGroup = [sentence];
+        }
+    });
+
+    if (currentGroup.length > 0) grouped.push(currentGroup.join(" "));
+
+    return grouped;
 }
 
 // Helper: Extract JSON from mixed response text
 function extractJsonFromText(text) {
     try {
-        // Remove markdown-style ```json code fences
-        text = text.trim().replace(/^```json|```$/g, "");
+        text = text
+            .trim()
+            .replace(/^```json|```$/g, "")
+            .replace(/,(?=\s*?[}\]])/g, ""); // Fix trailing commas
 
-        const start = text.indexOf("[");
-        const end = text.lastIndexOf("]") + 1;
+        // Handle incomplete JSON
+        if (!text.startsWith("[")) text = `[${text}]`;
 
-        if (start === -1 || end === -1 || start >= end) {
-            throw new Error("Valid JSON array not found.");
-        }
+        const parsed = JSON.parse(text);
 
-        const jsonChunk = text.slice(start, end);
-        return JSON.parse(jsonChunk);
+        // Validate structure
+        return parsed
+            .filter((item) => item.claim && item.verdict && item.reasoning)
+            .map((item) => ({
+                ...item,
+                verdict:
+                    item.verdict.charAt(0).toUpperCase() +
+                    item.verdict.slice(1).toLowerCase(),
+            }));
     } catch (err) {
-        console.error("❌ Failed to extract JSON:", err.message);
+        console.error("JSON extraction failed:", err);
         return [];
     }
 }
@@ -75,21 +121,39 @@ async function fetchSources(claim) {
 
 // Helper: Fact-check sentences in batch using JSON format
 async function checkSentences(sentences) {
-    const numbered = sentences.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    const numbered = sentences
+        .map((s, i) => `${i + 1}. ${s.replace(/\n/g, " ")}`)
+        .join("\n");
 
     const prompt = `
-You are a fact-checking assistant. Analyze each of the following numbered statements and return a JSON array. 
-For each, include:
-- sentence (string)
-- verdict (either \"True\" or \"False\")
-- explanation (short explanation of your verdict)
+Analyze these statements as a professional fact-checker. Consider multi-sentence claims as single units.
+Return a JSON array with these fields for each claim:
+- claim: The full text of the factual assertion (may contain multiple sentences)
+- verdict: "True", "False", or "Unverified"
+- reasoning: Concise analysis of evidence
+- needs_context: Whether the claim requires surrounding context for verification
 
-Statements:
+Follow these rules:
+1. Group dependent clauses with their main statements
+2. Treat transitional phrases as part of previous claims
+3. Ignore rhetorical questions and opinions
+
+Example response:
+[
+    {
+        "claim": "COVID-19 vaccines contain microchips that track recipients. This was confirmed by a Pfizer executive.",
+        "verdict": "False",
+        "reasoning": "No credible evidence supports vaccine microchips. Pfizer executives have never made such claims.",
+        "needs_context": false
+    }
+]
+
+Statements to analyze:
 ${numbered}
 
-Respond only with the JSON array.`;
+Respond with only the JSON array:`;
 
-    console.log("🧠 Prompt to Cohere:\n", prompt);
+    console.log("🧠 Optimized prompt:\n", prompt);
 
     const response = await cohere.generate({
         model: "command",
@@ -108,8 +172,8 @@ Respond only with the JSON array.`;
 
     for (const result of parsed) {
         if (result.verdict.toLowerCase() === "false") {
-            console.log(`🔗 Fetching sources for: \"${result.sentence}\"`);
-            result.sources = await fetchSources(result.sentence);
+            console.log(`🔗 Fetching sources for: \"${result.claim}\"`);
+            result.sources = await fetchSources(result.claim);
             falseClaims.push(result);
         }
     }
