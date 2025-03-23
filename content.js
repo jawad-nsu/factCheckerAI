@@ -612,10 +612,14 @@ window.onload = async function () {
               "\\$&"
             );
 
-            // Create a data attribute with source count
-            const dataAttributes = `data-sources="${sourceCount}" data-fact-check="${this.escapeHtml(
-              factCheckText
-            )}"`;
+            // Create a data attribute
+            // const dataAttributes = `data-sources="${
+            //   claim.sources
+            // }" data-fact-check="${this.escapeHtml(factCheckText)}"`;
+            const dataAttributes = `data-sources='${JSON.stringify(
+              claim.sources
+            ).replace(/'/g, "&apos;")}' 
+            data-fact-check="${this.escapeHtml(factCheckText)}"`;
 
             // Replace the sentence text with highlighted version
             const newHTML = paragraphHTML.replace(
@@ -662,6 +666,7 @@ window.onload = async function () {
             <h4>Fact Check</h4>
             <div id="fact-check-explanation"></div>
             <div id="source-count" class="source-info"></div>
+            <div id="source-list" class="source-info"></div>
           </div>
         `;
         document.body.appendChild(modal);
@@ -689,24 +694,44 @@ window.onload = async function () {
           const modal = document.getElementById("fact-check-modal");
           const explanation = document.getElementById("fact-check-explanation");
           const sourceInfo = document.getElementById("source-count");
+          const sourceList = document.getElementById("source-list"); // Assuming there's a container for sources
 
           // Get the fact check text
           explanation.textContent = this.getAttribute("data-fact-check");
 
-          // Get the source count
-          const sourceCount =
-            parseInt(this.getAttribute("data-sources"), 10) || 0;
+          // Parse the sources from the element's attribute
+          const sources = JSON.parse(this.getAttribute("data-sources") || "[]");
+
+          // Clear previous source list
+          sourceList.innerHTML = "";
 
           // Set the source info
-          if (sourceCount > 0) {
-            const sourceText = sourceCount === 1 ? "source" : "sources";
-            sourceInfo.innerHTML = `<strong>${sourceCount} ${sourceText}</strong> found to support this claim.`;
+          if (sources.length > 0) {
+            sourceInfo.innerHTML = `<strong>${sources.length} ${
+              sources.length === 1 ? "source" : "sources"
+            }</strong> found to support this claim.`;
             sourceInfo.className = "source-info source-available";
+
+            // Generate the source list
+            sources.forEach((source) => {
+              const sourceItem = document.createElement("div");
+              sourceItem.className = "source-item";
+              sourceItem.style.marginBottom = "10px";
+
+              sourceItem.innerHTML = `
+                <a href="${source.link}" target="_blank" class="source-title">${source.title}</a>
+                <p class="source-snippet">${source.snippet}</p>
+                <span class="source-domain">${source.source}</span>
+              `;
+
+              sourceList.appendChild(sourceItem);
+            });
           } else {
             sourceInfo.textContent = "No sources found for this claim.";
             sourceInfo.className = "source-info source-unavailable";
           }
 
+          // Display the modal
           modal.style.display = "block";
         };
       });

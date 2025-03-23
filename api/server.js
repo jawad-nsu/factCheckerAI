@@ -316,7 +316,7 @@ async function checkSentences(sentences) {
   Return ONLY a properly formatted JSON array with the following structure:
   [
     {
-      "sentence": "The exact text of the inaccurate statement"
+      "sentence": "The exact text of the inaccurate statement",
     },
     // Additional inaccurate statements if present
   ]
