@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fact Checker AI</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 32px;
+      height: 32px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+    }
+    .status.error {
+      background-color: #ffebee;
+      border-color: #f44336;
+      color: #d32f2f;
+    }
+    .status.success {
+      background-color: #e8f5e9;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+    .button {
+      padding: 8px 16px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #1557b0;
+    }
+    .button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat-item {
+      padding: 10px;
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #1a73e8;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="../icons/icon48.png" alt="Fact Checker AI" class="logo">
+      <h1>Fact Checker AI</h1>
+    </div>
+    
+    <div id="status" class="status">
+      Ready to fact-check
+    </div>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="claims-count">0</div>
+        <div class="stat-label">Claims Found</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="sources-count">0</div>
+        <div class="stat-label">Sources Found</div>
+      </div>
+    </div>
+    
+    <button id="check-button" class="button">
+      Check Article
+    </button>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html> 
