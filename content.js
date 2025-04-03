@@ -1,4 +1,7 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+// Browser compatibility layer
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
+browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Content script received message:", request);
 
   if (request.action === "collectData") {

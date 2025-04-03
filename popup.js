@@ -1,29 +1,57 @@
+// Browser compatibility layer
+const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
+
 document.addEventListener('DOMContentLoaded', function() {
   const collectButton = document.getElementById('collectData');
+  const buttonText = document.getElementById('buttonText');
+  const loadingSpinner = document.getElementById('loadingSpinner');
   const statusDiv = document.getElementById('status');
 
   collectButton.addEventListener('click', async () => {
     try {
+      // Show loading state
+      buttonText.textContent = 'Evaluating...';
+      loadingSpinner.classList.remove('hidden');
+      collectButton.disabled = true;
+      
       // Get the active tab
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await browserAPI.tabs.query({ active: true, currentWindow: true });
       
-      // First inject the content script if it's not already injected
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content.js']
-      });
-
-      // Send message to content script to collect data
-      const response = await chrome.tabs.sendMessage(tab.id, { action: 'collectData' });
-      
-      if (response && response.success) {
-        showStatus('Data collected successfully!', 'success');
+      // Check if we're in Firefox or Chrome
+      if (typeof browser !== 'undefined') {
+        // Firefox approach - content script is already injected via manifest
+        // Just send the message to collect data
+        const response = await browserAPI.tabs.sendMessage(tab.id, { action: 'collectData' });
+        
+        if (response && response.success) {
+          showStatus('Article evaluated successfully!', 'success');
+        } else {
+          showStatus('Failed to evaluate article: ' + (response?.error || 'Unknown error'), 'error');
+        }
       } else {
-        showStatus('Failed to collect data: ' + (response?.error || 'Unknown error'), 'error');
+        // Chrome approach - inject content script first
+        await browserAPI.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ['content.js']
+        });
+
+        // Send message to content script to collect data
+        const response = await browserAPI.tabs.sendMessage(tab.id, { action: 'collectData' });
+        
+        if (response && response.success) {
+          showStatus('Article evaluated successfully!', 'success');
+        } else {
+          showStatus('Failed to evaluate article: ' + (response?.error || 'Unknown error'), 'error');
+        }
       }
     } catch (error) {
       console.error('Error:', error);
       showStatus('Error: ' + error.message, 'error');
+    } finally {
+      // Reset button state
+      buttonText.textContent = 'Evaluate Article';
+      loadingSpinner.classList.add('hidden');
+      collectButton.disabled = false;
     }
   });
 

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Load Firefox Extension</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #0060df;
+    }
+    .step {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .important {
+      color: #d70022;
+      font-weight: bold;
+    }
+    .note {
+      background-color: #fff8dc;
+      padding: 10px;
+      border-left: 4px solid #ffd700;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Loading Firefox Extension</h1>
+  
+  <div class="note">
+    <p><strong>Note:</strong> If you're seeing the error "background.service_worker is currently disabled. Add background.scripts", 
+    you need to make sure you're selecting the correct manifest file.</p>
+  </div>
+  
+  <div class="step">
+    <h2>Method 1: Use the batch files</h2>
+    <ol>
+      <li>Run <code>prepare-firefox-extension.bat</code> to temporarily rename the manifest files</li>
+      <li>Load the extension in Firefox (see steps below)</li>
+      <li>After loading, run <code>restore-manifests.bat</code> to restore the original filenames</li>
+    </ol>
+  </div>
+  
+  <div class="step">
+    <h2>Method 2: Manual selection</h2>
+    <ol>
+      <li>Open Firefox and go to <code>about:debugging</code></li>
+      <li>Click "This Firefox" in the left sidebar</li>
+      <li>Click "Load Temporary Add-on"</li>
+      <li>Navigate to the extension directory</li>
+      <li class="important">IMPORTANT: Select the "manifest-firefox.json" file, NOT "manifest.json"</li>
+    </ol>
+  </div>
+  
+  <div class="step">
+    <h2>Verifying the extension loaded correctly</h2>
+    <ol>
+      <li>After loading, check if the extension appears in the list under "This Firefox"</li>
+      <li>Look for the extension icon in the Firefox toolbar</li>
+      <li>If you don't see the icon, try restarting Firefox</li>
+      <li>Check the browser console (F12) for any errors</li>
+    </ol>
+  </div>
+</body>
+</html> 
