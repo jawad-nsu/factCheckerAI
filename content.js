@@ -15,9 +15,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function findArticleContent() {
-  const article = document.getElementById("article-body");
+  // Common article content selectors used by news sites
+  const articleSelectors = [
+    'article', // Generic article tag
+    '[role="article"]', // ARIA role
+    '.article-content', // Common class name
+    '.article-body', // Common class name
+    '.post-content', // Common class name
+    '.entry-content', // Common class name
+    'main', // Main content area
+    '#main-content', // Common ID
+    '#content', // Common ID
+    '.content', // Common class
+    '.story-content', // Common class
+    '.article-text', // Common class
+    '.article-main', // Common class
+  ];
+
+  let article = null;
+  
+  // Try each selector until we find a match
+  for (const selector of articleSelectors) {
+    const elements = document.querySelectorAll(selector);
+    for (const element of elements) {
+      // Check if the element has enough text content to be considered an article
+      const textContent = element.textContent.trim();
+      if (textContent.length > 500) { // Minimum length to be considered an article
+        article = element;
+        break;
+      }
+    }
+    if (article) break;
+  }
+
   if (!article) {
-    throw new Error('No article with id "article-body" found on this page');
+    throw new Error('No article content found on this page');
   }
 
   // Get all paragraphs from the article
@@ -79,14 +111,41 @@ function underlineClaims(claim_source_list) {
     sidebar.appendChild(closeButton);
   }
 
-  // Find the article element by its ID. This is where the claims will be searched and underlined.
-  const article = document.getElementById("article-body");
-  if (!article) {
-    // If the article element is not found, throw an error.
-    throw new Error('No article with id "article-body" found on this page');
+  // Find the article element using the same selectors as findArticleContent
+  const articleSelectors = [
+    'article',
+    '[role="article"]',
+    '.article-content',
+    '.article-body',
+    '.post-content',
+    '.entry-content',
+    'main',
+    '#main-content',
+    '#content',
+    '.content',
+    '.story-content',
+    '.article-text',
+    '.article-main',
+  ];
+
+  let article = null;
+  for (const selector of articleSelectors) {
+    const elements = document.querySelectorAll(selector);
+    for (const element of elements) {
+      const textContent = element.textContent.trim();
+      if (textContent.length > 500) {
+        article = element;
+        break;
+      }
+    }
+    if (article) break;
   }
 
-  // Get all paragraph elements within the article.
+  if (!article) {
+    throw new Error('No article content found on this page');
+  }
+
+  // Get all paragraph elements within the article
   const paragraphs = article.getElementsByTagName("p");
 
   // Iterate through each paragraph in the article.
@@ -175,11 +234,39 @@ function extractSentences(text) {
 
 // Function to get all currently visible sentences
 function getVisibleSentences() {
-  const articleBody = document.getElementById("article-body");
+  // Find the article element using the same selectors as findArticleContent
+  const articleSelectors = [
+    'article',
+    '[role="article"]',
+    '.article-content',
+    '.article-body',
+    '.post-content',
+    '.entry-content',
+    'main',
+    '#main-content',
+    '#content',
+    '.content',
+    '.story-content',
+    '.article-text',
+    '.article-main',
+  ];
+
+  let articleBody = null;
+  for (const selector of articleSelectors) {
+    const elements = document.querySelectorAll(selector);
+    for (const element of elements) {
+      const textContent = element.textContent.trim();
+      if (textContent.length > 500) {
+        articleBody = element;
+        break;
+      }
+    }
+    if (articleBody) break;
+  }
 
   // If article body doesn't exist, return empty array
   if (!articleBody) {
-    console.warn('Article body with ID "article-body" not found');
+    console.warn('No article content found on this page');
     return [];
   }
 
@@ -398,13 +485,6 @@ window.onload = async function () {
       try {
         this.showStatus("Initializing fact-checker...");
 
-        console.log("Hostname:", window.location.hostname);
-
-        // If user is not on Financial Time website, show error message
-        if (window.location.hostname !== "www.ft.com") {
-          throw new Error("Fact-checker is only available on Financial Time");
-        }
-
         const article = this.findArticleContent();
 
         if (!article || !article.text) {
@@ -561,12 +641,39 @@ window.onload = async function () {
         return;
       }
 
-      // Get the article content container using the specific ID
-      const articleContainer = document.getElementById("article-body");
+      // Find the article element using the same selectors as findArticleContent
+      const articleSelectors = [
+        'article',
+        '[role="article"]',
+        '.article-content',
+        '.article-body',
+        '.post-content',
+        '.entry-content',
+        'main',
+        '#main-content',
+        '#content',
+        '.content',
+        '.story-content',
+        '.article-text',
+        '.article-main',
+      ];
+
+      let articleContainer = null;
+      for (const selector of articleSelectors) {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+          const textContent = element.textContent.trim();
+          if (textContent.length > 500) {
+            articleContainer = element;
+            break;
+          }
+        }
+        if (articleContainer) break;
+      }
 
       if (!articleContainer) {
-        console.error("Could not find article with ID 'article-body'");
-        this.showStatus("Could not find article with ID 'article-body'");
+        console.error("Could not find article content on this page");
+        this.showStatus("Could not find article content on this page");
         this.stopProgressIndicator();
         return;
       }

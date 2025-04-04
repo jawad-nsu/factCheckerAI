@@ -1,6 +1,6 @@
 // Listen for installation
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Website Data Collector extension installed');
+  console.log('FactCheckAI installed');
 });
 
 // Listen for any messages from content script or popup

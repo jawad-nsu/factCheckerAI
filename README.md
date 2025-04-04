@@ -1,4 +1,4 @@
-# Website Data Collector Chrome Extension
+# FactCheckAI Chrome Extension
 
 This Chrome extension allows you to collect website data and send it to a backend API for processing.
 
