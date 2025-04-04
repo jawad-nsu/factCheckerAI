@@ -329,7 +329,7 @@ async function checkSentences(sentences) {
   Please analyze the following article for factual accuracy:
   
   ARTICLE TEXT:
-  ${sentences}
+  ${sentences.join(" ")}
   
   Identify and extract ONLY statements containing inaccurate or misleading information. Return your findings as a JSON array of inaccurate statements exactly as they appear in the text. If all statements are factually accurate, return an empty array.
   `;
@@ -398,8 +398,26 @@ app.post("/fact-check-article", async (req, res) => {
     return res.status(400).json({ error: "Invalid article input." });
   }
 
-  try {
-    const claims = await checkSentences(article);
+  try {  
+    const { data } = await axios.post(
+      "https://idir.uta.edu/claimbuster/api/v2/score/text/sentences/",
+      {
+        "input_text": article
+      },
+      {
+        headers: {
+          "x-api-key": process.env.CLAIMBUSTER_API_KEY
+        }
+      }
+    );
+
+    const sentences = data.results.filter((s) => s.score > 0.75);
+
+    if (sentences.length === 0) {
+      res.json("No fact-checkable sentences exist in the text.");
+    }
+    
+    const claims = await checkSentences(sentences);
 
     console.log(`❌ Found ${claims.length} inaccurate claim(s).`);
     console.log(claims);
